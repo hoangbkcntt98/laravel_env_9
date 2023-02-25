@@ -1,0 +1,70 @@
+version: '3'
+services:
+  webapp:
+    build:
+      context: ${ENV_DIR}/php
+      dockerfile: Dockerfile
+    container_name: webapp
+    volumes:
+      - ${SOURCE_DIR}:/var/www/
+      - ${ENV_DIR}/php/init.sh:/tmp/init.sh
+    ports:
+      - 5173:5173
+    depends_on:
+      - local_composer
+  webserver:
+    image: nginx
+    container_name: webserver
+    volumes:
+      - ${SOURCE_DIR}:/var/www/
+      - ${ENV_DIR}/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
+    depends_on:
+      - local_composer
+  database:
+    image: mysql:8.0
+    container_name: database
+    ports:
+      - 33061:3306
+    volumes:
+      - ${ENV_DIR}/database/data:/var/lib/mysql
+      - ${ENV_DIR}/database/init:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=Hoangdo@123
+      - MYSQL_USER=hoangbk
+      - MYSQL_PASSWORD=Hoangdo@123  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: db_adminer
+    environment:
+      - MYSQL_USER=hoangbk
+      - MYSQL_PASSWORD=Hoangdo@123
+      - PMA_ARBITRARY=1
+    ports:
+      - 8001:80
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 8025:8025
+      - 1025:1025
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: bugger485@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+  local_composer:
+    container_name: local_composer
+    build:
+      context: ${ENV_DIR}/composer
+      dockerfile: composer.dockerfile
+    command:  /tmp/create_project.sh
+    environment:
+      - APP_NAME=${APP_NAME}
+    volumes:
+      - ./:/var/www/html
+      - ${ENV_DIR}/composer/create_project.sh:/tmp/create_project.sh

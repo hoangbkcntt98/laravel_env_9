@@ -42,4 +42,5 @@ RUN pecl install xdebug \
 
 COPY php.ini /usr/local/etc/php/php.ini
 EXPOSE 9000
+EXPOSE 5173
 CMD ["php-fpm"]

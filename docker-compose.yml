@@ -8,6 +8,10 @@ services:
     volumes:
       - ${SOURCE_DIR}:/var/www/
       - ${ENV_DIR}/php/init.sh:/tmp/init.sh
+    environment:
+      - APP_NAME=${APP_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
     ports:
       - 5173:5173
     depends_on:
@@ -31,15 +35,16 @@ services:
       - ${ENV_DIR}/database/data:/var/lib/mysql
       - ${ENV_DIR}/database/init:/docker-entrypoint-initdb.d
     environment:
-      - MYSQL_ROOT_PASSWORD=Hoangdo@123
-      - MYSQL_USER=hoangbk
-      - MYSQL_PASSWORD=Hoangdo@123  
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_DATABASE=${APP_NAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: db_adminer
     environment:
-      - MYSQL_USER=hoangbk
-      - MYSQL_PASSWORD=Hoangdo@123
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
       - PMA_ARBITRARY=1
     ports:
       - 8001:80
@@ -59,12 +64,14 @@ services:
       - "5050:80"
   local_composer:
     container_name: local_composer
+    working_dir: /tmp
     build:
       context: ${ENV_DIR}/composer
       dockerfile: composer.dockerfile
-    command:  /tmp/create_project.sh
     environment:
       - APP_NAME=${APP_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - ./:/var/www/html
+      - ./src:/var/www/html
       - ${ENV_DIR}/composer/create_project.sh:/tmp/create_project.sh

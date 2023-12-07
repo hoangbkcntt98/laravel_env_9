@@ -16,6 +16,8 @@ services:
       - 5173:5173
     depends_on:
       - local_composer
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   webserver:
     image: nginx
     container_name: webserver
